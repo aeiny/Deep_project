@@ -1,9 +1,10 @@
+import numpy as np
 import torch
 from torch import nn, Tensor
 
 
 class STA(nn.Module):
-    def __init__(self, L : int, K : int, B : int):
+    def __init__(self, L : int=2, K : int=10000, B : int=1):
         super(STA, self).__init__()
         self.L = L
         self.K = K
@@ -21,7 +22,10 @@ class STA(nn.Module):
         self.W_2s = torch.normal(0, 1, (K, K))
         self.W_2s.requires_grad = True
 
-        self.conv_layer = nn.Conv2d(2*self.L, 2*self.L, 3, stride=1, padding=1)
+        self.conv_layer_x = nn.Conv2d(2*self.L, 2*self.L, 3, stride=1, padding=1)
+        self.conv_layer_s = nn.Conv2d(2*self.L, 2*self.L, 3, stride=1, padding=1)
+
+        self.positional_encoding = PositionalEncoding(self.K, self.B)
 
     def forward(self, S : Tensor, X : Tensor):
         Xe : Tensor = self.W_1x @ S
@@ -63,7 +67,14 @@ class STA(nn.Module):
         S_hat = S_hat.view(2*self.L, self.K, self.B)
 
         # add positional encoding
+        X_hat = self.positional_encoding(X_hat)
+        S_hat = self.positional_encoding(X_hat)
+
         # add convolution
+        X_e_hat = self.conv_layer_x(X_hat)
+        S_e_hat = self.conv_layer_s(S_hat)
+
+        return torch.cat((X_e_hat, S_e_hat), dim=0) # not sure about this
 
 class PositionalEncoding(nn.Module):
 
@@ -75,7 +86,7 @@ class PositionalEncoding(nn.Module):
 
     def _get_sinusoid_encoding_table(self, n_position, d_hid):
         # n_position - B
-        # d_hid - K]
+        # d_hid - K
         # We need to add this 2L times
 
         ''' Sinusoid position encoding table '''
