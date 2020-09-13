@@ -109,6 +109,16 @@ class PositionalEncoding(nn.Module):
 class Encoder(nn.Module):
     def __init__(self):
         super().__init__()
+        self.linear = nn.Sequential(nn.Linear(10000, 10000), nn.Linear(10000, 10000))
+
+    def forward(self, x:Tensor):
+        assert(x.shape == (1, 1, 10000, 1))
+        x = x.view(1, 10000)
+        return self.linear(x)
+
+class EncoderSTA(nn.Module):
+    def __init__(self):
+        super().__init__()
         self.linear = nn.Sequential(nn.Linear(40000, 40000), nn.Linear(40000, 10000))
 
     def forward(self, x:Tensor):

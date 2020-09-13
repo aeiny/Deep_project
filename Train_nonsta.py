@@ -5,73 +5,61 @@ import time
 import torch
 from tqdm import tqdm
 
-from Models import STA, EncoderSTA
+from Models import Encoder
 from Utils import makeSignalAndNoise
 import numpy as np
 
-# clean_signal, noise, signal, Pxx_den = makeSignalAndNoise(np.cos, num_of_points=10000, noise_type="white noise")
-# signal, Pxx_den = torch.unsqueeze(torch.tensor(signal, dtype=torch.float32), dim=0), torch.unsqueeze(torch.tensor(Pxx_den, dtype=torch.float32), dim=0)
-
 def calculate_loss():
-    test_clean_signals, test_noisy_signals, test_Pxx_dens = None, None, None
-    train_clean_signals, train_noisy_signals, train_Pxx_dens = np.load('test_data.npz')
+    test_clean_signals, test_noisy_signals = None, None
+    train_clean_signals, train_noisy_signals = np.load('test_data.npz')
 
     losses = []
     with torch.no_grad():
-        sta.eval()
         encoder.eval()
-        for clean_signal, noisy_signal, pxx_dens in zip(test_clean_signals, test_noisy_signals, test_Pxx_dens):
+        for clean_signal, noisy_signal in zip(test_clean_signals, test_noisy_signals):
             # send them to device
             test_clean_signal = clean_signal.to(device)
             test_noisy_signal = noisy_signal.to(device)
-            test_pxx_dens = pxx_dens.to(device)
 
-            signal, Pxx_den = torch.unsqueeze(torch.tensor(signal, dtype=torch.float32), dim=0), torch.unsqueeze(
-                torch.tensor(Pxx_den, dtype=torch.float32), dim=0)
-            sta_output = sta(signal, Pxx_den)
+            signal = torch.unsqueeze(torch.tensor(signal, dtype=torch.float32)
 
             # forward + backward + optimize
-            output = encoder(sta_output)  # forward pass
+            output = encoder(signal)  # forward pass
             mse_loss = torch.nn.MSELoss()
             loss = mse_loss(clean_signal, output)
             losses.append(loss.item())
 
     return np.mean(losses)
 
-sta = STA(1, 10000, 1)
-# sta_output = sta(signal, Pxx_den)
-# print(f"X shape: {sta_output.shape}")
-encoder = EncoderSTA()
+
+encoder = Encoder()
 
 #parameters
 epochs = 500
 learning_rate = 0.001
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-optimizer = torch.optim.Adam(list(sta.parameters()) + list(encoder.parameters()), lr=learning_rate)
+optimizer = torch.optim.Adam(encoder.parameters(), lr=learning_rate)
 
-train_clean_signals, train_noisy_signals, train_Pxx_dens = None, None, None
+train_clean_signals, train_noisy_signals = None, None
 loader = np.load('train_data.npz')
-train_clean_signals, train_noisy_signals, train_Pxx_dens = loader['arr_0'], loader['arr_1'], loader['arr_2']
+train_clean_signals, train_noisy_signals = loader['arr_0'], loader['arr_1']
 
 
 # training loop
 for epoch in range(1, epochs + 1):
     print(f"start epoch {epoch}")
-    sta.train()
     encoder.train()  # put in training mode
     running_loss = 0.0
     epoch_time = time.time()
-    for _clean_signal, _noisy_signal, _pxx_den in tqdm(zip(train_clean_signals, train_noisy_signals, train_Pxx_dens)):
+    for _clean_signal, _noisy_signal in tqdm(zip(train_clean_signals, train_noisy_signals)):
         # send them to device
         _clean_signal = torch.Tensor(_clean_signal, device=device)
         _noisy_signal = torch.Tensor(_noisy_signal, device=device)
-        _pxx_den = torch.Tensor(_pxx_den, device=device)
 
-        noisy_signal, pxx_den, clean_signal = torch.unsqueeze(_noisy_signal, dim=0), torch.unsqueeze(_pxx_den, dim=0), torch.unsqueeze(_clean_signal, dim=0)
-        sta_output = sta(noisy_signal, pxx_den)
+        noisy_signal, clean_signal = torch.unsqueeze(_noisy_signal, dim=0), torch.unsqueeze(_clean_signal, dim=0)
 
         # forward + backward + optimize
-        output = encoder(sta_output)  # forward pass
+        output = encoder(noisy_signal)  # forward pass
         mse_loss = torch.nn.MSELoss()
         loss = mse_loss(clean_signal, output)
 
