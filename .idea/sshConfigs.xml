@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="SshConfigs">
+    <configs>
+      <sshConfig authType="PASSWORD" host="132.68.39.36" id="e560bb42-41c3-4e8b-8f4d-f7ee4a8efea0" port="22" nameFormat="DESCRIPTIVE" username="orgad.hadas" />
+    </configs>
+  </component>
+</project>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="85e5a75c-c201-4ec5-a668-36886d42cecb" name="rishon">
+        <fileTransfer rootFolder="/home/orgad.hadas" accessType="SFTP" host="132.68.39.36" port="22" sshConfigId="e560bb42-41c3-4e8b-8f4d-f7ee4a8efea0" sshConfig="orgad.hadas@132.68.39.36:22 password">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>
