@@ -1,7 +1,7 @@
 import numpy as np
 from scipy import signal
 
-def makeSignalAndNoise(function, amp, freq, num_of_points=1e4):
+def makeSignalAndNoise(function, amp, freq, num_of_points=1e3):
     # def createNoise(signal, noise_type=noise_type):
     #     noise_power = 0.001
     #     signal_noise = signal + noise_power * np.random.normal(0, 1, size=len(signal))

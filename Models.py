@@ -4,67 +4,86 @@ from torch import nn, Tensor
 
 
 class STA(nn.Module):
-    def __init__(self, L : int=1, K : int=10000, B : int=1):
+    def __init__(self, L : int=1, K : int=1000, B : int=1):
         super(STA, self).__init__()
         self.L = L
         self.K = K
         self.B = B
 
-        self.W_1x = torch.normal(0, 1, (L, L))
+        self.W_1x = torch.nn.Parameter(torch.normal(0, 1, (L, L)))
         self.W_1x.requires_grad = True
 
-        self.W_1s = torch.normal(0, 1, (L, L))
+        self.W_1s = torch.nn.Parameter(torch.normal(0, 1, (L, L)))
         self.W_1s.requires_grad = True
 
-        self.W_2x = torch.normal(0, 1, (K, K))
+        self.W_2x = torch.nn.Parameter(torch.normal(0, 1, (K, K)))
         self.W_2x.requires_grad = True
 
-        self.W_2s = torch.normal(0, 1, (K, K))
+        self.W_2s = torch.nn.Parameter(torch.normal(0, 1, (K, K)))
         self.W_2s.requires_grad = True
 
-        self.conv_layer_x = nn.Conv2d(2*self.L, 2*self.L, 3, stride=1, padding=1)
-        self.conv_layer_s = nn.Conv2d(2*self.L, 2*self.L, 3, stride=1, padding=1)
+        self.conv_layer_x = nn.Conv2d(in_channels=2*self.L, out_channels=2*self.L, kernel_size=3, stride=1, padding=1)
+        self.conv_layer_s = nn.Conv2d(in_channels=2*self.L, out_channels=2*self.L, kernel_size=3, stride=1, padding=1)
 
         self.positional_encoding = PositionalEncoding(self.B, self.K)
 
     def forward(self, X : Tensor, S : Tensor):
-        assert(X.shape == (self.L, self.K * self.B))
-        assert(S.shape == (self.L, self.K * self.B))
+        batch_size = X.shape[0]
 
-        Xe = self.W_1x @ S
-        Se = self.W_1s @ X
+        assert(X.shape == (batch_size, self.L, self.K * self.B))
+        assert(S.shape == (batch_size, self.L, self.K * self.B))
 
-        assert(Xe.shape == (self.L, self.K * self.B))
-        assert(Se.shape == (self.L, self.K * self.B))
 
-        Ax = torch.softmax(Xe.T @ Xe, dim=0)
-        As = torch.softmax(Se.T @ Se, dim=0)
+        Xe = S @ self.W_1x
+        Se = X @ self.W_1s
 
-        Xa = Xe @ Ax
-        Sa = Se @ As
+        assert(Xe.shape == (batch_size, self.L, self.K * self.B))
+        assert(Se.shape == (batch_size, self.L, self.K * self.B))
 
-        assert(Xe.shape == (self.L, self.K * self.B))
-        assert(Se.shape == (self.L, self.K * self.B))
+        Ax = torch.softmax(torch.bmm(Xe.transpose(1,2), Xe), dim=1)
+        As = torch.softmax(torch.bmm(Se.transpose(1,2), Se), dim=1)
 
-        Mx = self.W_2x @ Xa.view(self.K, self.L * self.B)
-        Ms = self.W_2x @ Sa.view(self.K, self.L * self.B)
+        assert(Ax.shape == (batch_size, self.K * self.B, self.K * self.B))
+        assert(As.shape == (batch_size, self.K * self.B, self.K * self.B))
 
-        assert(Mx.shape == (self.K, self.L * self.B))
-        assert(Ms.shape == (self.K, self.L * self.B))
+        Xa = torch.bmm(Xe, Ax)
+        Sa = torch.bmm(Se, As)
 
-        Mx = Mx.view(self.L, self.K * self.B)
-        Ms = Ms.view(self.L, self.K * self.B)
+        assert(Xa.shape == (batch_size, self.L, self.K * self.B))
+        assert(Sa.shape == (batch_size, self.L, self.K * self.B))
 
+        Xa = Xa.view(batch_size, self.L, self.K, self.B)
+        Sa = Sa.view(batch_size, self.L, self.K, self.B)
+
+        Xa = Xa.permute(0, 1, 3, 2)
+        Xa = Xa.reshape(batch_size, self.L * self.B, self.K)
+        Mx = Xa @ self.W_2x
+        assert(Mx.shape == (batch_size, self.K, self.L * self.B))
+        Mx = Mx.reshape(batch_size, self.L, self.B, self.K)
+        Mx = Mx.permute(0, 1, 3, 2)
+
+        Sa = Sa.permute(0, 1, 3, 2)
+        Sa = Sa.reshape(batch_size, self.L * self.B, self.K)
+        Ms = Sa @ self.W_2s
+        assert(Ms.shape == (batch_size, self.K, self.L * self.B))
+        Ms = Ms.reshape(batch_size, self.L, self.B, self.K)
+        Ms = Ms.permute(0, 1, 3, 2)
+
+
+        Mx = Mx.view(batch_size, self.L, self.K * self.B)
+        Ms = Ms.view(batch_size, self.L, self.K * self.B)
+
+        # Apply the attention masks
         assert(Mx.shape == X.shape)
         assert(Ms.shape == S.shape)
         Xm = Mx * X
-        Sm = Ms * X
+        Sm = Ms * S
 
-        X_hat = torch.cat((Xm, X), dim=0)
-        S_hat = torch.cat((Sm, S), dim=0)
+        X_hat = torch.cat((Xm, X), dim=1)
+        S_hat = torch.cat((Sm, S), dim=1)
 
-        assert(X_hat.shape == (2*self.L, self.K * self.B))
-        assert(S_hat.shape == (2*self.L, self.K * self.B))
+        assert(X_hat.shape == (batch_size, 2*self.L, self.K * self.B))
+        assert(S_hat.shape == (batch_size, 2*self.L, self.K * self.B))
 
         X_hat = X_hat.view(2*self.L, self.K, self.B)
         S_hat = S_hat.view(2*self.L, self.K, self.B)
@@ -73,10 +92,10 @@ class STA(nn.Module):
         S_hat = self.positional_encoding(S_hat)
 
         # add convolution
-        X_e_hat = self.conv_layer_x(X_hat.unsqueeze(dim=0))
-        S_e_hat = self.conv_layer_s(S_hat.unsqueeze(dim=0))
+        X_e_hat = self.conv_layer_x(X_hat)
+        S_e_hat = self.conv_layer_s(S_hat)
 
-        return torch.cat((X_e_hat, S_e_hat), dim=0) # not sure about this
+        return torch.cat((X_e_hat, S_e_hat), dim=1)
 
 class PositionalEncoding(nn.Module):
 
@@ -106,22 +125,23 @@ class PositionalEncoding(nn.Module):
     def forward(self, x):
         return x + self.pos_table[:, :x.size(1)].clone().detach()
 
+SIGNAL_LEN = 1000
 class Encoder(nn.Module):
+
     def __init__(self):
         super().__init__()
-        self.linear = nn.Sequential(nn.Linear(10000, 10000), nn.Linear(10000, 10000))
+        self.linear = nn.Sequential(nn.Linear(SIGNAL_LEN, SIGNAL_LEN), nn.Linear(SIGNAL_LEN, SIGNAL_LEN))
 
     def forward(self, x:Tensor):
-        assert(x.shape == (1, 1, 10000, 1))
-        x = x.view(1, 10000)
+        assert(x.shape == (1, SIGNAL_LEN))
         return self.linear(x)
 
 class EncoderSTA(nn.Module):
     def __init__(self):
         super().__init__()
-        self.linear = nn.Sequential(nn.Linear(40000, 40000), nn.Linear(40000, 10000))
+        self.linear = nn.Sequential(nn.Linear(SIGNAL_LEN * 4, SIGNAL_LEN * 4), nn.Linear(SIGNAL_LEN * 4, SIGNAL_LEN))
 
     def forward(self, x:Tensor):
-        assert(x.shape == (2, 2, 10000, 1))
-        x = x.view(1, 40000)
+        assert(x.shape == (2, 2, SIGNAL_LEN, 1))
+        x = x.view(1, SIGNAL_LEN * 4)
         return self.linear(x)

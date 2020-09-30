@@ -12,7 +12,7 @@ Pxx_dens = []
 noisy_signals = []
 for i in tqdm(range(TRAIN_DATA)):
     amp = np.random.uniform(0, 10)
-    freq = np.random.uniform(0, 10000)
+    freq = np.random.uniform(0, 1000)
     clean_signal, noise, noisy_signal, Pxx_den = makeSignalAndNoise(np.cos, amp, freq)
     clean_signals.append(clean_signal)
     noisy_signals.append(noisy_signal)
@@ -25,7 +25,7 @@ Pxx_dens = []
 noisy_signals = []
 for i in tqdm(range(TEST_DATA)):
     amp = np.random.uniform(0, 10)
-    freq = np.random.uniform(0, 10000)
+    freq = np.random.uniform(0, 1000)
     clean_signal, noise, noisy_signal, Pxx_den = makeSignalAndNoise(np.cos, amp, freq)
     clean_signals.append(clean_signal)
     noisy_signals.append(noisy_signal)
