@@ -40,8 +40,8 @@ class STA(nn.Module):
         assert(Xe.shape == (batch_size, self.L, self.K * self.B))
         assert(Se.shape == (batch_size, self.L, self.K * self.B))
 
-        Ax = torch.softmax(torch.bmm(Xe.transpose(1,2), Xe), dim=1)
-        As = torch.softmax(torch.bmm(Se.transpose(1,2), Se), dim=1)
+        Ax = torch.softmax(torch.bmm(Xe.transpose(1,2), Xe), dim=2)
+        As = torch.softmax(torch.bmm(Se.transpose(1,2), Se), dim=2)
 
         assert(Ax.shape == (batch_size, self.K * self.B, self.K * self.B))
         assert(As.shape == (batch_size, self.K * self.B, self.K * self.B))
