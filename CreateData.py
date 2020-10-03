@@ -1,34 +1,91 @@
 import numpy as np
+from scipy import signal
 
-from Utils import makeSignalAndNoise
-import pickle
-from tqdm import tqdm
+# Const:
+rand_gen = np.random.RandomState(0)
+SAMPLE_SIZE = 450
+OFFSET_SIZE = 50
 
-TRAIN_DATA = 1000
-TEST_DATA = 200
+MIN_SIGNAL_X = int(-33e6/2)
+MAX_SIGNAL_X = int(33e6/2)
 
-clean_signals = []
-Pxx_dens = []
-noisy_signals = []
-for i in tqdm(range(TRAIN_DATA)):
-    amp = np.random.uniform(0, 10)
-    freq = np.random.uniform(0, 1000)
-    clean_signal, noise, noisy_signal, Pxx_den = makeSignalAndNoise(np.cos, amp, freq)
-    clean_signals.append(clean_signal)
-    noisy_signals.append(noisy_signal)
-    Pxx_dens.append(Pxx_den)
+TRAIN_SIZE = int(50e3)
+TEST_SIZE = int(10e3)
+VAL_SIZE = int(5e3)
 
-np.savez('train_data.npz', clean_signals, noisy_signals, Pxx_dens)
+class NOISE_TYPE:
+    UNIFORM, NORMAL = range(2)
 
-clean_signals = []
-Pxx_dens = []
-noisy_signals = []
-for i in tqdm(range(TEST_DATA)):
-    amp = np.random.uniform(0, 10)
-    freq = np.random.uniform(0, 1000)
-    clean_signal, noise, noisy_signal, Pxx_den = makeSignalAndNoise(np.cos, amp, freq)
-    clean_signals.append(clean_signal)
-    noisy_signals.append(noisy_signal)
-    Pxx_dens.append(Pxx_den)
+def crateSinSignal(amp, freq):
+    return {
+            "name" : "sinX",
+            "function" : lambda x: amp * np.sin((2*np.pi) * freq * x),
+            }
 
-np.savez('test_data.npz', clean_signals, noisy_signals, Pxx_dens)
+def crateUniformNoise(low, high):
+    return {
+            "name" : "uniform",
+            "type" : NOISE_TYPE.UNIFORM,
+            "low": low,
+            "high" : high
+            }
+
+def makeSignalAndNoise(signal_info, noise_info):
+    def trainTestSplitIndices():
+        num_of_indices = int((MAX_SIGNAL_X - MIN_SIGNAL_X) / (SAMPLE_SIZE + OFFSET_SIZE))
+        indices = np.arange(num_of_indices)
+        rand_gen.shuffle(indices)
+        train_indices = np.sort(indices[:TRAIN_SIZE])
+        validation_indices = np.sort(indices[TRAIN_SIZE : TRAIN_SIZE + VAL_SIZE])
+        test_indices = np.sort(indices[TRAIN_SIZE + VAL_SIZE : TRAIN_SIZE + VAL_SIZE + TEST_SIZE])
+        assert(len(train_indices) == TRAIN_SIZE)
+        assert(len(validation_indices) == VAL_SIZE)
+        assert(len(test_indices) == TEST_SIZE)
+        return train_indices, validation_indices, test_indices
+
+    def creteCleanSignal(indices, signal_info=signal_info):
+        def indicesToIndexes(indices):
+            indexes = [[MIN_SIGNAL_X + (SAMPLE_SIZE + OFFSET_SIZE) * offset + x for x in range(SAMPLE_SIZE)] for offset in indices]
+            return np.array(indexes)
+        indexes = indicesToIndexes(indices)
+        return indexes, signal_info["function"](indexes)
+        
+
+    def creteNoise(noise_shape, noise_info=noise_info):
+        noise = None
+        noise_type = noise_info["type"]
+        if noise_type == NOISE_TYPE.UNIFORM:
+            return np.random.uniform(noise_info["low"], noise_info["high"], noise_shape)
+        elif noise_type == NOISE_TYPE.NORMAL:
+            return None
+        else:
+            return None
+
+    # Find Indices:
+    train_indices, val_indices, test_indices = trainTestSplitIndices()
+    
+    # Create Clean Signals:
+    train_indexes, train_clean_signal = creteCleanSignal(train_indices)
+    val_indexes, val_clean_signal = creteCleanSignal(val_indices)
+    test_indexes, test_clean_signal = creteCleanSignal(test_indices)
+
+    # Create Noise:
+    train_noise = creteNoise(train_clean_signal.shape)
+    val_noise = creteNoise(val_clean_signal.shape)
+    test_noise = creteNoise(test_clean_signal.shape)
+    
+    # Create real Signals:
+    train_real_signal = train_clean_signal + train_noise
+    val_real_signal = val_clean_signal + val_noise
+    test_real_signal = test_clean_signal + test_noise
+
+    # Create Pxx dens:
+    _, train_Pxx_dens = signal.welch(train_real_signal, axis=-1, return_onesided=False, nperseg=SAMPLE_SIZE)
+    _, val_Pxx_dens = signal.welch(val_real_signal, axis=-1, return_onesided=False, nperseg=SAMPLE_SIZE)
+    _, test_Pxx_dens = signal.welch(test_real_signal, axis=-1, return_onesided=False, nperseg=SAMPLE_SIZE)
+
+    np.savez(f'train_data_signal__{signal_info["name"]}__noise_{noise_info["name"]}.npz', train_indexes, train_clean_signal, train_noise, train_real_signal, train_Pxx_dens)
+    np.savez(f'val_data_signal__{signal_info["name"]}__noise_{noise_info["name"]}.npz', val_indexes, val_clean_signal, val_noise, val_real_signal, val_Pxx_dens)
+    np.savez(f'test_data_signal__{signal_info["name"]}__noise_{noise_info["name"]}.npz', test_indexes, test_clean_signal, test_noise, test_real_signal, test_Pxx_dens)
+
+makeSignalAndNoise(crateSinSignal(2,2), crateUniformNoise(-1,1))
