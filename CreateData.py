@@ -48,6 +48,7 @@ def makeSignalAndNoise(signal_info, noise_info):
             indexes = [[MIN_SIGNAL_X + (SAMPLE_SIZE + OFFSET_SIZE) * offset + x for x in range(SAMPLE_SIZE)] for offset in indices]
             return np.array(indexes)
         indexes = indicesToIndexes(indices)
+        indexes = np.expand_dims(indexes, axis=1)
         return indexes, signal_info["function"](indexes)
         
 
