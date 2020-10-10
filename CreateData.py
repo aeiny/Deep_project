@@ -1,4 +1,5 @@
 import numpy as np
+import tqdm
 from scipy import signal
 
 # Const:
@@ -18,13 +19,13 @@ class NOISE_TYPE:
 
 def crateSinSignal(amp, freq):
     return {
-            "name" : "sinX",
+            "name" : f"sinX__amp_{amp}__freq_{freq}",
             "function" : lambda x: amp * np.sin((2*np.pi) * freq * x),
             }
 
 def crateUniformNoise(low, high):
     return {
-            "name" : "uniform",
+            "name" : f"uniform__low_{low}__high_{high}",
             "type" : NOISE_TYPE.UNIFORM,
             "low": low,
             "high" : high
@@ -45,7 +46,7 @@ def makeSignalAndNoise(signal_info, noise_info):
 
     def creteCleanSignal(indices, signal_info=signal_info):
         def indicesToIndexes(indices):
-            indexes = [[MIN_SIGNAL_X + (SAMPLE_SIZE + OFFSET_SIZE) * offset + x for x in range(SAMPLE_SIZE)] for offset in indices]
+            indexes = [[MIN_SIGNAL_X + (SAMPLE_SIZE + OFFSET_SIZE) * offset + x for x in range(SAMPLE_SIZE)] for offset in tqdm.tqdm(indices)]
             return np.array(indexes)
         indexes = indicesToIndexes(indices)
         indexes = np.expand_dims(indexes, axis=1)
