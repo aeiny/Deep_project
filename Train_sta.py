@@ -148,20 +148,20 @@ def train(model, model_name, dl_train, dl_val, dl_test, n_epochs, optimizer, los
             }
             if not os.path.isdir('checkpoints'):
                 os.mkdir('checkpoints')
-            torch.save(state, f'./checkpoints/{model_name}_ckpt_{datetime.datetime.now()}.pth')
+            torch.save(state, os.path.join(os.path.abspath(os.curdir),'checkpoints',f'{model_name}_ckpt_{epoch}.pth'))
 
     print('==> Finished Training ...')
     print('Saving results on Train')
     if not os.path.isdir('results'):
         os.mkdir('results')
 
-    torch.save((check_model(model, device, dl_train, loss_fn, with_freq), losses_per_epoch_train), f'./results/{model_name}_ckpt_{datetime.datetime.now()}_train.pth')
+    torch.save((check_model(model, device, dl_train, loss_fn, with_freq), losses_per_epoch_train), os.path.join(os.path.abspath(os.curdir),'results',f'{model_name}_train.pth'))
 
     print('Saving results on Test')
-    torch.save(check_model(model, device, dl_test, loss_fn, with_freq), f'./results/{model_name}_result_{datetime.datetime.now()}_test.pth')
+    torch.save(check_model(model, device, dl_test, loss_fn, with_freq), os.path.join(os.path.abspath(os.curdir),'results',f'{model_name}_test.pth'))
 
     print('Saving all losses per epoch')
-    torch.save({'Train Losses': losses_per_epoch_train,'Val losses': losses_per_epoch_validation}, f'./results/{model_name}_result_{datetime.datetime.now()}_losses.pth')
+    torch.save({'Train Losses': losses_per_epoch_train,'Val losses': losses_per_epoch_validation}, os.path.join(os.path.abspath(os.curdir),'results',f'{model_name}_result_losses.pth'))
 
 
 

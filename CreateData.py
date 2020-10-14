@@ -86,8 +86,8 @@ def makeSignalAndNoise(signal_info, noise_info):
     _, val_Pxx_dens = signal.welch(val_real_signal, axis=-1, return_onesided=False, nperseg=SAMPLE_SIZE)
     _, test_Pxx_dens = signal.welch(test_real_signal, axis=-1, return_onesided=False, nperseg=SAMPLE_SIZE)
 
-    np.savez(f'train_data_signal__{signal_info["name"]}__noise_{noise_info["name"]}2.npz', train_indexes, train_clean_signal, train_noise, train_real_signal, train_Pxx_dens)
-    np.savez(f'val_data_signal__{signal_info["name"]}__noise_{noise_info["name"]}2.npz', val_indexes, val_clean_signal, val_noise, val_real_signal, val_Pxx_dens)
-    np.savez(f'test_data_signal__{signal_info["name"]}__noise_{noise_info["name"]}2.npz', test_indexes, test_clean_signal, test_noise, test_real_signal, test_Pxx_dens)
+    np.savez(f'train_data_signal__{signal_info["name"]}__noise_{noise_info["name"]}.npz', train_indexes, train_clean_signal, train_noise, train_real_signal, train_Pxx_dens)
+    np.savez(f'val_data_signal__{signal_info["name"]}__noise_{noise_info["name"]}.npz', val_indexes, val_clean_signal, val_noise, val_real_signal, val_Pxx_dens)
+    np.savez(f'test_data_signal__{signal_info["name"]}__noise_{noise_info["name"]}.npz', test_indexes, test_clean_signal, test_noise, test_real_signal, test_Pxx_dens)
 
 makeSignalAndNoise(crateSinSignal(2,2), crateUniformNoise(-1,1))
