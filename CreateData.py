@@ -29,6 +29,12 @@ def crateSinSquaredSignal(amp, freq):
             "function" : lambda x: amp * np.sin((2*np.pi) * (x^2)),
             }
 
+def crateESinSquaredSignal(amp, freq):
+    return {
+            "name" : f"EsinX^2__amp_{amp}__freq_{freq}",
+            "function" : lambda x: amp * np.e ** (np.sin((2*np.pi) * (x^2))),
+            }
+
 def crateUniformNoise(low, high):
     return {
             "name" : f"uniform__low_{low}__high_{high}",
@@ -96,4 +102,4 @@ def makeSignalAndNoise(signal_info, noise_info):
     np.savez(f'val_data_signal__{signal_info["name"]}__noise_{noise_info["name"]}.npz', val_indexes, val_clean_signal, val_noise, val_real_signal, val_Pxx_dens)
     np.savez(f'test_data_signal__{signal_info["name"]}__noise_{noise_info["name"]}.npz', test_indexes, test_clean_signal, test_noise, test_real_signal, test_Pxx_dens)
 
-makeSignalAndNoise(crateSinSquaredSignal(2,2), crateUniformNoise(-1,1))
+makeSignalAndNoise(crateESinSquaredSignal(2,2), crateUniformNoise(-2,2))

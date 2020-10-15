@@ -1,8 +1,8 @@
 import datetime
 import os
 import torch
-# from tqdm import tqdm
-from tqdm.notebook import tqdm
+from tqdm import tqdm
+# from tqdm.notebook import tqdm
 import numpy as np
 
 def load_batch(batch, device):
@@ -134,7 +134,7 @@ def train(model, model_name, dl_train, dl_val, dl_test, n_epochs, optimizer, los
     for epoch in range(1, n_epochs + 1):
         print(f"Start epoch {epoch}")
         avg_loss, test_loss = train_epoch(model, dl_train, dl_val, optimizer, loss_fn, device, with_freq)
-        losses_per_epoch_train.append(avg_loss)
+        losses_per_epoch_train.append(avg_loss.item())
         losses_per_epoch_validation.append(test_loss)
         if epoch % print_every == 0:
             log = "Epoch: {} | Train Loss: {:.4f} | Val loss: {:.3f} | ".format(epoch, avg_loss, test_loss)
@@ -155,13 +155,15 @@ def train(model, model_name, dl_train, dl_val, dl_test, n_epochs, optimizer, los
     if not os.path.isdir('results'):
         os.mkdir('results')
 
-    torch.save((check_model(model, device, dl_train, loss_fn, with_freq), losses_per_epoch_train), os.path.join(os.path.abspath(os.curdir),'results',f'{model_name}_train.pth'))
+    torch.save((check_model(model, device, dl_train, loss_fn, with_freq)), os.path.join(os.path.abspath(os.curdir),'results',f'{model_name}_train.pth'))
 
     print('Saving results on Test')
-    torch.save(check_model(model, device, dl_test, loss_fn, with_freq), os.path.join(os.path.abspath(os.curdir),'results',f'{model_name}_test.pth'))
+    res = check_model(model, device, dl_test, loss_fn, with_freq)
+    torch.save(res, os.path.join(os.path.abspath(os.curdir),'results',f'{model_name}_test.pth'))
 
+    print(f"Average loss on test: {res['avg loss']}")
     print('Saving all losses per epoch')
-    torch.save({'Train Losses': losses_per_epoch_train,'Val losses': losses_per_epoch_validation}, os.path.join(os.path.abspath(os.curdir),'results',f'{model_name}_result_losses.pth'))
+    torch.save({'Train Losses': losses_per_epoch_train,'Val losses': losses_per_epoch_validation}, os.path.join(os.path.abspath(os.curdir),'results',f'{model_name}_losses.pth'))
 
 
 
