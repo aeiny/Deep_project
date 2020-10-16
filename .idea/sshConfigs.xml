@@ -3,6 +3,7 @@
   <component name="SshConfigs">
     <configs>
       <sshConfig authType="PASSWORD" host="132.68.39.36" id="e560bb42-41c3-4e8b-8f4d-f7ee4a8efea0" port="22" nameFormat="DESCRIPTIVE" username="orgad.hadas" />
+      <sshConfig host="deep-learning2.eastus.cloudapp.azure.com" id="2985377d-b9b7-4c5e-844a-83967eff2ed1" keyPath="C:\Users\t-haorga\Downloads\deep-learning_key.pem" port="22" nameFormat="DESCRIPTIVE" username="azureuser" />
     </configs>
   </component>
 </project>

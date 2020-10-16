@@ -9,6 +9,13 @@
           </advancedOptions>
         </fileTransfer>
       </webServer>
+      <webServer id="b32f4bec-cdaa-4472-984c-0262fdffc97e" name="azure">
+        <fileTransfer rootFolder="/home/azureuser" accessType="SFTP" host="deep-learning2.eastus.cloudapp.azure.com" port="22" sshConfigId="2985377d-b9b7-4c5e-844a-83967eff2ed1" sshConfig="azureuser@deep-learning2.eastus.cloudapp.azure.com:22 key" keyPair="true">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
     </option>
   </component>
 </project>
