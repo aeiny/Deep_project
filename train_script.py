@@ -4,9 +4,9 @@ nonlinearities=True
 gets_spectral_input=True
 sta_enabled=True
 batch_size=128
-n_epochs=5000
+n_epochs=1
 lr=0.001
-run_name = 'linear_with_relu_with_STA_uniform_-1_1_E^sinx_amp-2_freq-2'
+run_name = 'nonlinearities_True__spectral_input_True__STA_True__Normal_mu_0_sigma_1' #f'nonlinearities_{nonlinearities}__spectral_input_{gets_spectral_input}__STA_{sta_enabled}__Normal_mu_{0}_sigma_{1}'
 
 from Models import Encoder
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -15,7 +15,7 @@ enc = enc.to(device)
 
 print(f"model length: {len(list(enc.parameters()))}")
 
-enc.load_state_dict(torch.load(f'checkpoints/{run_name}_ckpt_1650.pth')['model'])
+enc.load_state_dict(torch.load(f'checkpoints/{run_name}_ckpt_1000.pth')['model'])
 
 from Train_sta import train
 from Utils import SignalsDataset
