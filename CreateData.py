@@ -17,27 +17,39 @@ VAL_SIZE = int(5e3)
 class NOISE_TYPE:
     UNIFORM, NORMAL = range(2)
 
-def crateSinSignal(amp, freq):
+def crateCosSignal(amp, freq):
     return {
-            "name" : f"sinX__amp_{amp}__freq_{freq}",
-            "function" : lambda x: amp * np.sin((2*np.pi) * x),
+            "name" : f"cosX__amp-{amp}_freq-{freq}",
+            "function" : lambda x: amp * np.cos((2 * np.pi) * freq * x),
             }
 
-def crateSinSquaredSignal(amp, freq):
+def crateExpCinSquaredSignal(amp, freq):
     return {
-            "name" : f"sinX^2__amp_{amp}__freq_{freq}",
-            "function" : lambda x: amp * np.sin((2*np.pi) * (x^2)),
+            "name" : f"exp(cosX^2)__amp-{amp}_freq-{freq}",
+            "function" : lambda x: amp * np.exp(np.cos((2 * np.pi) * freq * x * x)),
             }
 
-def crateESinSquaredSignal(amp, freq):
-    return {
-            "name" : f"exp(sinX^2)__amp_{amp}__freq_{freq}",
-            "function" : lambda x: amp * np.e ** (np.sin((2*np.pi) * (x^2))),
-            }
+# def crateSinSignal(amp, freq):
+#     return {
+#             "name" : f"sinX__amp_{amp}__freq_{freq}",
+#             "function" : lambda x: amp * np.cos((2 * np.pi) * freq * x),
+#             }
+
+# def crateSinSquaredSignal(amp, freq):
+#     return {
+#             "name" : f"sinX^2__amp_{amp}__freq_{freq}",
+#             "function" : lambda x: amp * np.sin((2*np.pi) * freq * (x^2)),
+#             }
+
+# def crateESinSquaredSignal(amp, freq):
+#     return {
+#             "name" : f"exp(sinX^2)__amp_{amp}__freq_{freq}",
+#             "function" : lambda x: amp * np.e ** (np.sin((2*np.pi) * freq * (x^2))),
+#             }
 
 def crateUniformNoise(low, high):
     return {
-            "name" : f"uniform__low_{low}__high_{high}",
+            "name" : f"uniform_low-{low}_high-{high}",
             "type" : NOISE_TYPE.UNIFORM,
             "low": low,
             "high" : high
@@ -45,7 +57,7 @@ def crateUniformNoise(low, high):
 
 def crateNormalNoise(mu, sigma):
     return {
-            "name" : f"normal__mu_{mu}__sigma_{sigma}",
+            "name" : f"normal_mu-{mu}_sigma-{sigma}",
             "type" : NOISE_TYPE.NORMAL,
             "mu": mu,
             "sigma" : sigma
@@ -106,8 +118,14 @@ def makeSignalAndNoise(signal_info, noise_info):
     _, val_Pxx_dens = signal.welch(val_real_signal, axis=-1, return_onesided=False, nperseg=SAMPLE_SIZE)
     _, test_Pxx_dens = signal.welch(test_real_signal, axis=-1, return_onesided=False, nperseg=SAMPLE_SIZE)
 
-    np.savez(f'train_data_signal__{signal_info["name"]}__noise_{noise_info["name"]}.npz', train_indexes, train_clean_signal, train_noise, train_real_signal, train_Pxx_dens)
-    np.savez(f'val_data_signal__{signal_info["name"]}__noise_{noise_info["name"]}.npz', val_indexes, val_clean_signal, val_noise, val_real_signal, val_Pxx_dens)
-    np.savez(f'test_data_signal__{signal_info["name"]}__noise_{noise_info["name"]}.npz', test_indexes, test_clean_signal, test_noise, test_real_signal, test_Pxx_dens)
+    np.savez(f'data/train_data_signal__{signal_info["name"]}__noise_{noise_info["name"]}.npz', train_indexes, train_clean_signal, train_noise, train_real_signal, train_Pxx_dens)
+    np.savez(f'data/val_data_signal__{signal_info["name"]}__noise_{noise_info["name"]}.npz', val_indexes, val_clean_signal, val_noise, val_real_signal, val_Pxx_dens)
+    np.savez(f'data/test_data_signal__{signal_info["name"]}__noise_{noise_info["name"]}.npz', test_indexes, test_clean_signal, test_noise, test_real_signal, test_Pxx_dens)
+    print(f'data/train_data_signal__{signal_info["name"]}__noise_{noise_info["name"]}.npz')
+    print(f'data/val_data_signal__{signal_info["name"]}__noise_{noise_info["name"]}.npz')
+    print(f'data/test_data_signal__{signal_info["name"]}__noise_{noise_info["name"]}.npz')
 
-makeSignalAndNoise(crateSinSquaredSignal(4,4), crateNormalNoise(1,0))
+
+makeSignalAndNoise(crateCosSignal(2, 2), crateNormalNoise(0,3))
+#crateUniformNoise(0,4)crateNormalNoise
+#crateNormalNoise
