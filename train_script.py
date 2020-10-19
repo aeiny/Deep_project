@@ -7,13 +7,13 @@ gets_spectral_input=False
 sta_enabled=False
 n_epochs=5000
 
-sig_name_train='2cos2x'#2exp(sin(2x^2))
-noise_name_train='N(0,1)'#Uni(-1,1)
-train_name='data_signal__cosX__amp-2_freq-2__noise_normal_mu-0_sigma-1.npz'
+sig_name_train='5cos0.2x'#2exp(sin(2x^2))
+noise_name_train='Uni(-1,1)' #'N(0,1)'#Uni(-1,1)
+train_name='data_signal__cosX__amp-5_freq-0.2__noise_uniform_low--1_high-1.npz'
 
-sig_name_test='2cos2x'
-noise_name_test='N(0,1)'
-test_name='data_signal__cosX__amp-2_freq-2__noise_normal_mu-0_sigma-1.npz'
+sig_name_test='5cos0.2x'
+noise_name_test='Uni(0,4)'
+test_name='data_signal__cosX__amp-5_freq-0.2__noise_uniform_low-0_high-4.npz'
 
 batch_size=128
 lr=0.001

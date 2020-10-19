@@ -20,13 +20,13 @@ class NOISE_TYPE:
 def crateCosSignal(amp, freq):
     return {
             "name" : f"cosX__amp-{amp}_freq-{freq}",
-            "function" : lambda x: amp * np.cos((2 * np.pi) * freq * x),
+            "function" : lambda x: amp * np.cos( freq * x),
             }
 
 def crateExpCinSquaredSignal(amp, freq):
     return {
             "name" : f"exp(cosX^2)__amp-{amp}_freq-{freq}",
-            "function" : lambda x: amp * np.exp(np.cos((2 * np.pi) * freq * x * x)),
+            "function" : lambda x: amp * np.exp(np.cos( freq * x * x)),
             }
 
 # def crateSinSignal(amp, freq):
@@ -126,6 +126,6 @@ def makeSignalAndNoise(signal_info, noise_info):
     print(f'data/test_data_signal__{signal_info["name"]}__noise_{noise_info["name"]}.npz')
 
 
-makeSignalAndNoise(crateCosSignal(2, 2), crateNormalNoise(0,3))
-#crateUniformNoise(0,4)crateNormalNoise
+makeSignalAndNoise(crateCosSignal(5, 1/5), crateNormalNoise(0,3))
+#crateUniformNoise(0,4)
 #crateNormalNoise
