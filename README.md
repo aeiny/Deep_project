@@ -1,7 +1,5 @@
 # Final project in Deep Learning CS236781
 
-## Dependencies:
-
 ## Requirements:
 
 Listed in the Requirements.txt file.
