@@ -1,25 +1,23 @@
 import torch
 import sys
 
-
-nonlinearities=True
-gets_spectral_input=True
-sta_enabled=True
-n_epochs = None
-
 adam = False
-n_epochs=5000
-lr=0.00001
-batch_size=128
+batch_size = 128
+checkpoint_every = 50
+lr = 0.00001 if adam else 0.001
+n_epochs = 5000
 
+nonlinearities = True
+gets_spectral_input = True
+sta_enabled = True
 
-sig_name_train='5exp(cos0.2x)'#2exp(sin(2x^2))
-noise_name_train='Uni(0,8)' #'N(0,1)'#Uni(-1,1)
-train_name='data_signal__exp(cosX)__amp-5_freq-0.2__noise_uniform_low-0_high-8.npz'
+sig_name_train = '' #5cos(0.2x)
+noise_name_train = '' #'N(0,1)'#Uni(-1,1)
+train_name = '' #'data_signal__exp(cosX)__amp-5_freq-0.2__noise_uniform_low--1_high-1.npz'
 
-sig_name_test='5exp(cos0.2x)'
-noise_name_test='Uni(0,8)'
-test_name='data_signal__exp(cosX)__amp-5_freq-0.2__noise_uniform_low-0_high-8.npz'
+sig_name_test = '' #'5exp(cos0.2x)'
+noise_name_test = '' #'Uni(0,8)'
+test_name = '' #'data_signal__exp(cosX)__amp-5_freq-0.2__noise_uniform_low-0_high-8.npz'
 
 
 run_name = f'Train_sig-{sig_name_train}_noise-{noise_name_train}__Test_sig-{sig_name_test}_noise-{noise_name_test}___nonlinearities-{nonlinearities}_gets_spectral_input-{gets_spectral_input}_sta_enabled-{sta_enabled}'
@@ -54,5 +52,5 @@ else:
 loss_func = torch.nn.MSELoss()
 
 print(f"starting run: {run_name}")
-train(enc, run_name, dl_train, dl_val, dl_test, n_epochs, optimizer, loss_func, print_every=1, checkpoint_every=50, with_freq=gets_spectral_input)
+train(enc, run_name, dl_train, dl_val, dl_test, n_epochs, optimizer, loss_func, print_every=1, checkpoint_every=checkpoint_every, with_freq=gets_spectral_input)
 print(f"end run: {run_name}")
