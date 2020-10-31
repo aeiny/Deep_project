@@ -25,11 +25,23 @@ class SignalsDataset(Dataset):
         return len(self.data)
 
 def plotSignal():
-    loader = torch.load('linear_with_relu_with_STA_uniform_-1_1_E^sinx_amp-2_freq-2_uniform_-2_2_E^sinx_amp-2_freq-2_test.pth')
+    loader = torch.load('Train_sig-5cos0.2x_noise-Uni(-1,1)__Test_sig-5cos0.2x_noise-Uni(-1,1)___nonlinearities-True_gets_spectral_input-True_sta_enabled-True_test.pth')
+    signal = loader['data'][2][0]
+    noise = loader['data'][1][0]
+    clean_signal = loader['data'][0][0]
+    plt.plot(clean_signal.squeeze().cpu(),  label='The clean signal')
+    plt.plot(noise.squeeze().cpu(),  label='The noisy signal')
+    plt.plot(signal.squeeze().cpu(),  label='Result with STA')
+    plt.legend()
+    plt.show()
+    
+    loader = torch.load('Train_sig-5cos0.2x_noise-Uni(-1,1)__Test_sig-5cos0.2x_noise-Uni(-1,1)___nonlinearities-False_gets_spectral_input-False_sta_enabled-False_test.pth')
     signal = loader['data'][2][0]
     clean_signal = loader['data'][0][0]
-    plt.plot(signal.squeeze().cpu())
-    plt.plot(clean_signal.squeeze().cpu())
+    plt.plot(clean_signal.squeeze().cpu(),  label='The clean signal')
+    plt.plot(noise.squeeze().cpu(),  label='The noisy signal')
+    plt.plot(signal.squeeze().cpu(),  label='Result with STA')
+    plt.legend()
     plt.show()
 
 def plotSig(fileName):
@@ -40,4 +52,4 @@ def plotSig(fileName):
     plt.show()
 
 if __name__ == '__main__':
-    plotSig('val_data_signal__exp(cosX)__amp-5_freq-0.2__noise_uniform_low--1_high-1.npz')
+    plotSignal()
