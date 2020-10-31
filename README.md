@@ -1,5 +1,9 @@
 # Final project in Deep Learning CS236781
 
+This project is a continuation of a previous effort to develop a new attention mechanism which is based on the information stored in both the temporal and spectral domain of a signal. It was shown to perform well on ECG signals, and this justifies the motivation to apply this mechanism to other types of signals such as voice, photos and more.
+
+Please see project Report.pdf for more details on the project.
+
 ## Requirements:
 
 Listed in the Requirements.txt file.
