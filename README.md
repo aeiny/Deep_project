@@ -8,6 +8,13 @@ Please see project Report.pdf for more details on the project.
 
 Listed in the Requirements.txt file.
 
+## Structure:
+CreateData.py - the script to create the synthetic data. Creates train, validation and tests files in data/ folder.
+Models.py - all the torch models needed to run the experiments, including STA.
+Utils.py - includes the pytorch dataset for the experiments.
+Train_sta.py - includes the training classes for the experiments.
+train_script.py - the main training script - runs the training process and saves the results to result/ folder.
+
 ## Create the data:
 
 To create the data, run the script CreateData.py: edit the function call in the bottom of the script, and then run the script.
