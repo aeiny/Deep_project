@@ -5,18 +5,27 @@ import sys
 nonlinearities=True
 gets_spectral_input=True
 sta_enabled=True
-n_epochs=1500
+n_epochs = None
+if sta_enabled:
+    n_epochs=2000
+else:
+    n_epochs=5000
 
 sig_name_train='5exp(cos0.2x)'#2exp(sin(2x^2))
-noise_name_train='N(0,1)' #'N(0,1)'#Uni(-1,1)
-train_name='data_signal__exp(cosX)__amp-5_freq-0.2__noise_normal_mu-0_sigma-1.npz'
+noise_name_train='Uni(0,8)' #'N(0,1)'#Uni(-1,1)
+train_name='data_signal__exp(cosX)__amp-5_freq-0.2__noise_uniform_low-0_high-8.npz'
 
 sig_name_test='5exp(cos0.2x)'
-noise_name_test='Uni(0,4)'
-test_name='data_signal__exp(cosX)__amp-5_freq-0.2__noise_uniform_low-0_high-4.npz'
+noise_name_test='Uni(0,8)'
+test_name='data_signal__exp(cosX)__amp-5_freq-0.2__noise_uniform_low-0_high-8.npz'
 
 batch_size=128
-lr=0.00001
+lr = None
+if sta_enabled:
+    lr=0.00001
+else:
+    lr=0.001
+
 run_name = f'Train_sig-{sig_name_train}_noise-{noise_name_train}__Test_sig-{sig_name_test}_noise-{noise_name_test}___nonlinearities-{nonlinearities}_gets_spectral_input-{gets_spectral_input}_sta_enabled-{sta_enabled}'
 
 from Models import Encoder
@@ -40,7 +49,12 @@ ds_val = SignalsDataset(f'data/val_{test_name}')
 dl_val = DataLoader(ds_val, batch_size=batch_size, shuffle=True, drop_last=True)
 ds_test = SignalsDataset(f'data/test_{test_name}')
 dl_test = DataLoader(ds_test, batch_size=batch_size, shuffle=True, drop_last=True)
-optimizer = Adam(enc.parameters(), lr=lr)
+optimizer = None
+if sta_enabled:
+    optimizer = Adam(enc.parameters(), lr=lr)
+else:
+    optimizer = SGD(enc.parameters(), lr=lr)
+
 loss_func = torch.nn.MSELoss()
 
 print(f"starting run: {run_name}")
